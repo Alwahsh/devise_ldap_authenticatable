@@ -245,8 +245,7 @@ module Devise
         admin_ldap = LdapConnect.admin
 
         DeviseLdapAuthenticatable::Logger.send("Getting groups for #{dn}")
-	dn_temp = dn.split(",")[0][3..-1]
-        filter = Net::LDAP::Filter.eq(DEFAULT_GROUP_UNIQUE_MEMBER_LIST_KEY, dn_temp)
+        filter = Net::LDAP::Filter.eq(DEFAULT_GROUP_UNIQUE_MEMBER_LIST_KEY, @login)
         admin_ldap.search(:filter => filter, :base => @group_base).collect(&:dn)
       end
 
