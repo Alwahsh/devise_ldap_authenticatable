@@ -2,7 +2,7 @@ require "net/ldap"
 
 module Devise
   module LdapAdapter
-    DEFAULT_GROUP_UNIQUE_MEMBER_LIST_KEY = 'uniqueMember'
+    DEFAULT_GROUP_UNIQUE_MEMBER_LIST_KEY = 'memberUid'
 
     def self.valid_credentials?(login, password_plaintext)
       options = {:login => login,
@@ -198,8 +198,8 @@ module Devise
         admin_ldap = LdapConnect.admin
 
         unless ::Devise.ldap_ad_group_check
-          admin_ldap.search(:base => group_name, :scope => Net::LDAP::SearchScope_BaseObject) do |entry|
-            if entry[group_attribute].include? dn
+          admin_ldap.search(:base => "cn="+group_name+","+@group_base, :scope => Net::LDAP::SearchScope_BaseObject) do |entry|
+            if entry[group_attribute].include? @login
               in_group = true
             end
           end
@@ -239,11 +239,14 @@ module Devise
         return true
       end
 
+      
+      # Edit Here Ahmed.
       def user_groups
         admin_ldap = LdapConnect.admin
 
         DeviseLdapAuthenticatable::Logger.send("Getting groups for #{dn}")
-        filter = Net::LDAP::Filter.eq("uniqueMember", dn)
+	dn_temp = dn.split(",")[0][3..-1]
+        filter = Net::LDAP::Filter.eq(DEFAULT_GROUP_UNIQUE_MEMBER_LIST_KEY, dn_temp)
         admin_ldap.search(:filter => filter, :base => @group_base).collect(&:dn)
       end
 
