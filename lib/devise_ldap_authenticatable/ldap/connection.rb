@@ -117,8 +117,8 @@ module Devise
         admin_ldap = Connection.admin
 
         unless ::Devise.ldap_ad_group_check
-          admin_ldap.search(:base => group_name, :scope => Net::LDAP::SearchScope_BaseObject) do |entry|
-            if entry[group_attribute].include? dn
+          admin_ldap.search(:base => "cn=#{group_name},#{@group_base}", :scope => Net::LDAP::SearchScope_BaseObject) do |entry|
+            if entry[group_attribute].include? @login
               in_group = true
             end
           end
@@ -162,7 +162,7 @@ module Devise
         admin_ldap = Connection.admin
 
         DeviseLdapAuthenticatable::Logger.send("Getting groups for #{dn}")
-        filter = Net::LDAP::Filter.eq("uniqueMember", dn)
+        filter = Net::LDAP::Filter.eq(DEFAULT_GROUP_UNIQUE_MEMBER_LIST_KEY, @login)
         admin_ldap.search(:filter => filter, :base => @group_base).collect(&:dn)
       end
 
